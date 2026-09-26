@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QStore Repository Index</title>
+    <style>
+        :root {
+            --bg-color: #0b132b;
+            --card-bg: #1c2541;
+            --accent-cyan: #00f0ff;
+            --text-main: #ffffff;
+            --text-sub: #5bc0be;
+            --border-color: #3a506b;
+            --badge-pre-cli: #ff0055;
+            --badge-default: #00f0ff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Consolas', 'Cascadia Code', 'Segoe UI', monospace;
+            margin: 0;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 960px;
+            width: 100%;
+        }
+
+        header {
+            border: 2px solid var(--accent-cyan);
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            color: var(--accent-cyan);
+            letter-spacing: 1.5px;
+            font-size: 1.8rem;
+        }
+
+        .status-bar {
+            font-size: 0.95rem;
+            color: var(--text-sub);
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+
+        .app-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 18px;
+            position: relative;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .app-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+        }
+
+        .app-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .app-company {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 14px;
+        }
+
+        .app-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #000;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-pre-cli {
+            background-color: var(--badge-pre-cli);
+            color: #fff;
+        }
+
+        .badge-default {
+            background-color: var(--badge-default);
+            color: #000;
+        }
+
+        .card-footer {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .json-link {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+
+        .json-link:hover {
+            text-decoration: underline;
+        }
+
+        #loading {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--accent-cyan);
+            padding: 50px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>╭█▓▒░ QStore Central Index ░▒▓█╮</h1>
+        <div class="status-bar" id="status">Inicjalizacja połączenia ze strukturą GitHub Pages...</div>
+    </header>
+
+    <div id="loading">╭█▓▒░ Ładowanie index.json ░▒▓█╮</div>
+    <div class="app-grid" id="appGrid" style="display: none;"></div>
+</div>
+
+<script>
+    async function loadIndex() {
+        const statusEl = document.getElementById('status');
+        const loadingEl = document.getElementById('loading');
+        const gridEl = document.getElementById('appGrid');
+
+        try {
+            // Pobranie pliku index.json z głównego katalogu
+            const response = await fetch('./index.json');
+
+            if (!response.ok) {
+                throw new Error(`Błąd odpowiedzi HTTP: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            statusEl.innerText = `Ostatnia aktualizacja: ${data.updated || 'Brak daty'} | Dostępne aplikacje: ${data.apps ? data.apps.length : 0}`;
+            
+            loadingEl.style.display = 'none';
+            gridEl.style.display = 'grid';
+            gridEl.innerHTML = '';
+
+            if (!data.apps || data.apps.length === 0) {
+                gridEl.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">Brak dostępnych aplikacji w index.json.</p>';
+                return;
+            }
+
+            data.apps.forEach(app => {
+                const card = document.createElement('div');
+                card.className = 'app-card';
+
+                const category = app.category || 'Custom';
+                const isPreCli = category.toUpperCase() === 'PRE-CLI';
+                const badgeClass = isPreCli ? 'badge-pre-cli' : 'badge-default';
+
+                card.innerHTML = `
+                    <div class="app-name">╭${escapeHtml(app.name)}╮</div>
+                    <div class="app-company">Deweloper: ${escapeHtml(app.company)}</div>
+                    <span class="app-badge ${badgeClass}">${escapeHtml(category)}</span>
+                    <div class="card-footer">
+                        <a class="json-link" href="${escapeHtml(app.versionsUrl)}" target="_blank">📄 .versions.json</a>
+                    </div>
+                `;
+
+                gridEl.appendChild(card);
+            });
+
+        } catch (error) {
+            loadingEl.style.display = 'none';
+            statusEl.innerText = 'Nie udało się wczytać pliku index.json.';
+            statusEl.style.color = '#ff5555';
+            console.error('Błąd podczas pobierania manifestu:', error);
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    document.addEventListener('DOMContentLoaded', loadIndex);
+</script>
+
+</body>
+</html>
