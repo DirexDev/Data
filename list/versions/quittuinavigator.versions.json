@@ -1,0 +1,10 @@
+{
+  "versions": [
+    {
+      "version": "0.15.0",
+      "downloadUrl": "https://direxdev.github.io/data/files/QuitTuiNavigator_v015.zip",
+      "changelog": "Wydanie PRE-CLI: Pełna obsługa interfejsu TUI, wbudowane protokoły sieciowe oraz tryb tekstowy.",
+      "isLatest": true
+    }
+  ]
+}
