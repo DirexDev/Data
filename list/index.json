@@ -1,0 +1,12 @@
+{
+  "updated": "2026-09-26",
+  "apps": [
+    {
+      "id": "quittuinavigator",
+      "name": "QuitTuiNavigator",
+      "company": "DirexDev",
+      "category": "PRE-CLI",
+      "versionsUrl": "https://direxdev.github.io/data/list/versions/quittuinavigator.versions.json"
+    }
+  ]
+}
